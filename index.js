@@ -17,9 +17,9 @@ let dealer_hand_container = document.querySelector("#dealer-hand-container");
 
 const playerCards  = [];
 const dealerCards  = [];
-const cardNums     = ["ace"].concat(strRange(2, 10).concat(["jack", "queen", "king"]))
-const cardValues   = [11].concat(range(2, 10).concat([10, 10, 10]))
-const cardTypes    = ["clubs", "diamonds", "hearts", "spades"]
+const cardNums     = ["ace"].concat(strRange(2, 10).concat(["jack", "queen", "king"]));
+const cardValues   = [11].concat(range(2, 10).concat([10, 10, 10]));
+const cardTypes    = ["clubs", "diamonds", "hearts", "spades"];
 const card_items   = (cards, key) => cards.map((obj) => { return obj[key] });
 const sum          = (cards) => { return cards.reduce((a, b) => a + b, 0) };
 const hasBlackJack = (cards) => { return sum(cards) === 21 };
@@ -36,7 +36,7 @@ function clearHands() {
 }
 
 function reset() {
-    hand_button.textContent = "Deal Me"
+    hand_button.textContent = "Deal Me";
     hold_button.disabled = true;
 }
 
@@ -46,8 +46,8 @@ function getRandomIntRange(min=2, max=12) {
 
 function verifyUniqueCard(new_card_num, new_card_type) {
     let unique = true;
-    let card_nums  = card_items(playerCards, "card_num").concat(card_items(dealerCards, "card_num"))
-    let card_types = card_items(playerCards, "card_type").concat(card_items(dealerCards, "card_type"))
+    let card_nums  = card_items(playerCards, "card_num").concat(card_items(dealerCards, "card_num"));
+    let card_types = card_items(playerCards, "card_type").concat(card_items(dealerCards, "card_type"));
 
     for (var i = 0; i < card_nums.length; i++) {
         if (new_card_num === card_nums[i] && new_card_type === card_types[i]) {
@@ -91,7 +91,7 @@ function printCard(card, card_div, player_str) {
 function deal() {
     if (hand_button.textContent === "Deal Me") { clearHands() }
 
-    addCard(playerCards)
+    addCard(playerCards);
     printCard(playerCards[playerCards.length-1], player_hand_container, "Your");
 
     if (playerCards.length === 1) {
@@ -106,12 +106,12 @@ function deal() {
 
     message_dealer.textContent = `Dealer's first card is ${dealerCards[0].card_num}.`;
 
-    assessHand()
+    assessHand();
 }
 
 function assessHand() {
     let message = "";
-    let player_card_values = card_items(playerCards, "card_value")
+    let player_card_values = card_items(playerCards, "card_value");
 
     message_hand.textContent = `Your cards are ${player_card_values.join(", ")} (sum of ${sum(player_card_values)}).`;
 
@@ -119,7 +119,7 @@ function assessHand() {
         message = "Woohoo! You've got Blackjack!";
         reset();
     } else if (isAlive(player_card_values)) {
-        hand_button.textContent = "Hit Me!"
+        hand_button.textContent = "Hit Me!";
         hold_button.disabled = false;
         message = "Do you want to draw a new card?";
     } else {
@@ -131,7 +131,7 @@ function assessHand() {
 }
 
 function hold() {
-    let dealer_card_values = card_items(dealerCards, "card_value")
+    let dealer_card_values = card_items(dealerCards, "card_value");
 
     printCard(dealerCards[1], dealer_hand_container, "Dealer's");
 
@@ -141,7 +141,7 @@ function hold() {
         message = "Sorry, the dealer wins!";
     }
 
-    message_dealer.textContent = `The dealers cards are ${dealer_card_values.join(", ")} (sum of ${sum(dealer_card_values)}).`;
+    message_dealer.textContent = `The dealer's cards are ${dealer_card_values.join(", ")} (sum of ${sum(dealer_card_values)}).`;
     message_status.textContent = message;
 
     reset();
