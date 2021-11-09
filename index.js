@@ -67,7 +67,7 @@ function calcHand(cards, all=false) {
         totalHand = [totalHand]
 
         for (i = 0; i < cards.length; i++) {
-            if (cards[i].card_num === 1) {
+            if (cards[i].card_num === 0) {
                 numAces++
             }
         }
@@ -91,16 +91,16 @@ function calcHand(cards, all=false) {
 }
 
 function addCard(cards) {
-    let num  = randomInt(1, 14);
+    let num  = randomInt(0, 13);
     let type = randomInt(0, 4);
 
     while (!verifyUniqueCard(num, type)) {
-        num  = randomInt(1, 14);
+        num  = randomInt(0, 13);
         type = randomInt(0, 4);
     }
     
-    let cardValue = cardValues[num-1];
-    let cardStr   = cardNums[num - 1];
+    let cardValue = cardValues[num];
+    let cardStr   = cardNums[num];
     let typeStr   = cardTypes[type];
 
     cards.push({
@@ -135,7 +135,7 @@ function deal() {
         printCard(dealerCards[0], dealer_hand_container, "Dealer's");
     }
 
-    message_dealer.textContent = `Dealer's first card is ${dealerCards[0].card_num}.`;
+    message_dealer.textContent = `Dealer's first card is ${dealerCards[0].card_num_str}.`;
 
     assessHand();
 }
