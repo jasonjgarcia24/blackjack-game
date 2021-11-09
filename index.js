@@ -7,14 +7,19 @@ let hold_button    = document.querySelector("#hold-button");
 let player_hand_container = document.querySelector("#player-hand-container");
 let dealer_hand_container = document.querySelector("#dealer-hand-container");
 
-const playerCards  = [];
-const dealerCards  = [];
-const cardNums     = ["Ace"].concat(strRange(2, 10).concat(["Jack", "Queen", "King"]));
-const cardValues   = [11].concat(range(2, 10).concat([10, 10, 10]));
-const cardTypes    = ["clubs", "diamonds", "hearts", "spades"];
+const playerCards = [];
+const dealerCards = [];
+
+const cardProps = {
+    nums:   ["Ace"].concat(strRange(2, 10).concat(["Jack", "Queen", "King"])),
+    values: [11].concat(range(2, 10).concat([10, 10, 10])),
+    types:  ["clubs", "diamonds", "hearts", "spades"]
+}
+
+// Consider turning all these into object fields:
 const card_items   = (cards, key) => cards.map((obj) => { return obj[key] });
 const sum          = (cards) => { return cards.reduce((a, b) => a + b, 0) };
-const containsAce  = (cards) => { return card_items(cards, "card_num").includes(1) };
+const containsAce  = (cards) => { return card_items(cards, "card_num").includes(0) };
 const hasBlackJack = (cards) => { return calcHand(cards) === 21 };
 const isAlive      = (cards) => { return calcHand(cards) <= 21 };
 const isGreater    = () => { return calcHand(playerCards) > calcHand(dealerCards) };
@@ -99,9 +104,9 @@ function addCard(cards) {
         type = randomInt(0, 4);
     }
     
-    let cardValue = cardValues[num];
-    let cardStr   = cardNums[num];
-    let typeStr   = cardTypes[type];
+    let cardValue = cardProps.values[num];
+    let cardStr   = cardProps.nums[num];
+    let typeStr   = cardProps.types[type];
 
     cards.push({
         card_num: num,
