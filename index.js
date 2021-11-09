@@ -1,11 +1,3 @@
-function range(start, end) {
-    return Array(end - start + 1).fill().map((_, idx) => (start + idx));
-}
-
-function strRange(start, end) {
-    return Array(end - start + 1).fill().map((_, idx) => (start + idx).toString());
-}
-
 let message_status = document.querySelector("#message-status");
 let message_dealer = document.querySelector("#message-dealer");
 let message_hand   = document.querySelector("#message-hand");
@@ -17,15 +9,28 @@ let dealer_hand_container = document.querySelector("#dealer-hand-container");
 
 const playerCards  = [];
 const dealerCards  = [];
-const cardNums     = ["ace"].concat(strRange(2, 10).concat(["jack", "queen", "king"]));
+const cardNums     = ["Ace"].concat(strRange(2, 10).concat(["Jack", "Queen", "King"]));
 const cardValues   = [11].concat(range(2, 10).concat([10, 10, 10]));
 const cardTypes    = ["clubs", "diamonds", "hearts", "spades"];
 const card_items   = (cards, key) => cards.map((obj) => { return obj[key] });
 const sum          = (cards) => { return cards.reduce((a, b) => a + b, 0) };
-const hasBlackJack = (cards) => { return sum(cards) === 21 };
-const isAlive      = (cards) => { return sum(cards) <= 21 };
-const isGreater    = () => { return sum(card_items(playerCards, "card_value")) > sum(card_items(dealerCards, "card_value")) };
+const containsAce  = (cards) => { return card_items(cards, "card_num").includes(1) };
+const hasBlackJack = (cards) => { return calcHand(cards) === 21 };
+const isAlive      = (cards) => { return calcHand(cards) <= 21 };
+const isGreater    = () => { return calcHand(playerCards) > calcHand(dealerCards) };
 const cardImgPath  = (num, type) => { return `static/img/playing_cards/PNG-cards-1.3/${num}_of_${type}.png` };
+
+function randomInt(min, max) {
+    return Math.floor(Math.random() * (max - min) + min);
+}
+
+function range(start, end) {
+    return Array(end - start + 1).fill().map((_, idx) => (start + idx));
+}
+
+function strRange(start, end) {
+    return Array(end - start + 1).fill().map((_, idx) => (start + idx).toString());
+}
 
 function clearHands() {    
     playerCards.length = 0;
@@ -40,32 +45,58 @@ function reset() {
     hold_button.disabled = true;
 }
 
-function getRandomIntRange(min=2, max=12) {
-    return Math.floor(Math.random() * (max - min) + min);
-}
-
 function verifyUniqueCard(new_card_num, new_card_type) {
-    let unique = true;
     let card_nums  = card_items(playerCards, "card_num").concat(card_items(dealerCards, "card_num"));
     let card_types = card_items(playerCards, "card_type").concat(card_items(dealerCards, "card_type"));
 
     for (var i = 0; i < card_nums.length; i++) {
         if (new_card_num === card_nums[i] && new_card_type === card_types[i]) {
-            unique = false;
-            return unique;
+            return false;
         }
     }
 
-    return unique;
+    return true;
+}
+
+function calcHand(cards, all=false) {
+    let card_values = card_items(cards, "card_value");
+    let totalHand   = sum(card_values);
+    let numAces     = 0;
+
+    if (containsAce(cards)) {
+        totalHand = [totalHand]
+
+        for (i = 0; i < cards.length; i++) {
+            if (cards[i].card_num === 1) {
+                numAces++
+            }
+        }
+        
+        for (i = 0; i < numAces; i++) {
+            totalHand.push(totalHand[i] - 10)
+        }
+    }
+
+    if (containsAce(cards) && !all) {
+        var tempTotalHand = totalHand.filter(function(value, _, _){ return value <= 21 });
+
+        if (tempTotalHand.length !== 0) {
+            totalHand = Math.max(...tempTotalHand)
+        } else {
+            totalHand = Math.min(...totalHand)
+        }
+    }
+
+    return totalHand
 }
 
 function addCard(cards) {
-    let num  = getRandomIntRange();
-    let type = getRandomIntRange(0, 4);
+    let num  = randomInt(1, 14);
+    let type = randomInt(0, 4);
 
     while (!verifyUniqueCard(num, type)) {
-        num  = getRandomIntRange();
-        type = getRandomIntRange(0, 4);
+        num  = randomInt(1, 14);
+        type = randomInt(0, 4);
     }
     
     let cardValue = cardValues[num-1];
@@ -111,14 +142,19 @@ function deal() {
 
 function assessHand() {
     let message = "";
-    let player_card_values = card_items(playerCards, "card_value");
+    let player_card_strs  = card_items(playerCards, "card_num_str");
+    let player_card_total = calcHand(playerCards, all=true);
 
-    message_hand.textContent = `Your cards are ${player_card_values.join(", ")} (sum of ${sum(player_card_values)}).`;
+    if (Array.isArray(player_card_total)) {
+        message_hand.textContent = `Your cards are ${player_card_strs.join(", ")} (sum of ${player_card_total.join(" | ")}).`;
+    } else {
+        message_hand.textContent = `Your cards are ${player_card_strs.join(", ")} (sum of ${player_card_total}).`;
+    }
 
-    if (hasBlackJack(player_card_values)) {
+    if (hasBlackJack(playerCards)) {
         message = "Woohoo! You've got Blackjack!";
         reset();
-    } else if (isAlive(player_card_values)) {
+    } else if (isAlive(playerCards)) {
         hand_button.textContent = "Hit Me!";
         hold_button.disabled = false;
         message = "Do you want to draw a new card?";
@@ -135,13 +171,13 @@ function hold() {
 
     printCard(dealerCards[1], dealer_hand_container, "Dealer's");
 
-    if (isGreater() || !isAlive(dealer_card_values)) {
+    if (isGreater() || !isAlive(dealerCards)) {
         message = "Woohoo! You've beat the dealer!";
     } else {
         message = "Sorry, the dealer wins!";
     }
 
-    message_dealer.textContent = `The dealer's cards are ${dealer_card_values.join(", ")} (sum of ${sum(dealer_card_values)}).`;
+    message_dealer.textContent = `The dealer's cards are ${dealer_card_values.join(", ")} (sum of ${calcHand(dealerCards)}).`;
     message_status.textContent = message;
 
     reset();
